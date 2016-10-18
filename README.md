@@ -7,5 +7,5 @@
 ## Como usar
 
 - `docker-compose up --build`
+- Abrir browser en localhost:8081
 - `mosquitto_pub -h localhost -p 11883 -t messages -m "Payload for the webapp" -r`
-
