@@ -14,28 +14,79 @@
 <body>
 {% block body %}
     <h1>Hello world!</h1>
+    <p>
+    <b>MQTT Connection Status (websocket): </b>
+    <span id="mqtt_status">--</span>
+    </p>
+    <br>
+    <textarea id="log" rows=20 cols=50 disabled="disabled"></textarea>
+
+    <div id="svg-container">
+        <svg>
+
+        </svg>
+    </div>
 {% endblock body %}
 
 
     <script type="text/javascript">
     $(function () {
 
+        var $logger = $('#log');
+        $logger.val(''); // Remove \n
+        // $.get('/static/media/svg/demo.svg', function (svg) {
+        //     // console.log("Data", svgDoc);
+        //     $("#svg-container").html( svg)
+        //                                     .attr({
+        //                                             'height': '100%',
+        //                                             'width': '100%'
+        //                                     });
+        //     // $('#svg-container').append(data);
+        // });
+
+        var $mqtt_status = $('#mqtt_status');
+
+
         var client = new MqttClient({
-        host : 'localhost',
-        port : 8081,
+        host : window.location.hostname,
+        port : window.location.port,
         will : {
             topic   : 'farewells',
             payload : 'So long!',
         }
         });
         console.log("Client:", client);
-        client.on('connecting', function() { console.log('connecting...'); })
-        .on('connect', function() { console.log("hooraah, I'm connected"); })
-        .on('disconnect', function() { console.log('oh noes!'); })
-        .on('offline', function() { console.log('stopped trying, call connect manually'); });
+        client.on('connecting', function() {
+            console.log('connecting...');
+            $mqtt_status.text("Connecting...");
+
+        });
+        client.on('connect', function() {
+            console.log("hooraah, I'm connected");
+            $mqtt_status.text("Connected!");
+
+            // This API is not nice
+            client.subscribe('messages');
+
+        })
+        client.on('disconnect', function() {
+            $mqtt_status.text("Disconected");
+            console.log('oh noes!');
+        });
+        client.on('offline', function() {
+            $mqtt_status.text("Offline");
+            console.log('stopped trying, call connect manually');
+        });
+
+        client.on('message', function (topic, payload, rawPayload) {
+            // debugger;
+            console.log("Message", arguments, this);
+            $logger.val($logger.val() + "\n[" + topic + "] " + payload);
+        });
 
         console.info("Connect!");
         client.connect();
+
     });
 
     </script>
