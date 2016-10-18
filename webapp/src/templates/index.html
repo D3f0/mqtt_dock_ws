@@ -16,5 +16,29 @@
     <h1>Hello world!</h1>
 {% endblock body %}
 
+
+    <script type="text/javascript">
+    $(function () {
+
+        var client = new MqttClient({
+        host : 'localhost',
+        port : 8081,
+        will : {
+            topic   : 'farewells',
+            payload : 'So long!',
+        }
+        });
+        console.log("Client:", client);
+        client.on('connecting', function() { console.log('connecting...'); })
+        .on('connect', function() { console.log("hooraah, I'm connected"); })
+        .on('disconnect', function() { console.log('oh noes!'); })
+        .on('offline', function() { console.log('stopped trying, call connect manually'); });
+
+        console.info("Connect!");
+        client.connect();
+    });
+
+    </script>
+
 </body>
 </html>
