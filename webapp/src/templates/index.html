@@ -4,6 +4,12 @@
     <title>
         {% if title %}{{ title }}{%else%}MQTT Docker{%endif%}
     </title>
+    <script type="text/javascript"
+    src="{{ bower_component('paho.mqtt.js/src/mqttws31.js') }}"></script>
+    <script type="text/javascript"
+    src="{{ bower_component('web-mqtt-client/mqtt-client.js') }}"></script>
+    <script type="text/javascript"
+    src="{{ bower_component('jQuery/dist/jquery.js') }}"></script>
 </head>
 <body>
 {% block body %}
