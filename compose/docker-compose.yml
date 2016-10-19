@@ -22,6 +22,5 @@ services:
   webapp:
     build: ../services/webapp
     volumes:
-      - '../webapp/src:/home/webapp/src'
-    #command: python -m SimpleHTTPServer
+      - '../services/webapp/src:/home/webapp/src'
     command: "venv/bin/python src/main.py"
