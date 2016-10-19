@@ -1,3 +1,1 @@
-[submodule "mosquito_auth"]
-	path = mosquito_auth
-	url = https://github.com/jllopis/docker-mosquitto
+
