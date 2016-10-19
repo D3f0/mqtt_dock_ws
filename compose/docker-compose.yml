@@ -1,0 +1,24 @@
+version: "2"
+
+services:
+  nginx:
+    build: ./nginx
+    ports:
+      - "8081:80"
+    links:
+      - webapp
+      - mqtt
+
+  # Mosquitto
+  # For testing outside
+  mqtt:
+    build: ./mqtt
+    command: mosquitto -c /etc/mosquitto/mosquitto.conf
+    ports:
+      - 11883:1883  # mosquito_pub -h localhost -p 11883
+  webapp:
+    build: ./webapp
+    volumes:
+      - './webapp/src:/home/webapp/src'
+    #command: python -m SimpleHTTPServer
+    command: "venv/bin/python src/main.py"
