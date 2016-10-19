@@ -8,6 +8,9 @@ services:
     links:
       - webapp
       - mqtt
+    depends_on:
+      - mqtt
+      - webapp
 
   # Mosquitto
   # For testing outside
