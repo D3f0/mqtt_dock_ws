@@ -9,8 +9,10 @@ services:
       - webapp
       - mqtt
     depends_on:
-      - mqtt
       - webapp
+      - mqtt
+    external_links: 
+      - mqtt:9001
 
   # Mosquitto
   # For testing outside
@@ -19,6 +21,7 @@ services:
     command: mosquitto -c /etc/mosquitto/mosquitto.conf
     ports:
       - 11883:1883  # mosquito_pub -h localhost -p 11883
+      - 9001
   webapp:
     build: ../services/webapp
     volumes:
