@@ -1,0 +1,47 @@
+<html>
+    <head>
+        <title></title>
+           <script type="text/javascript"
+    src="{{ bower_component('paho.mqtt.js/src/mqttws31.js') }}"></script>
+    <script type="text/javascript"
+    src="{{ bower_component('web-mqtt-client/mqtt-client.js') }}"></script>
+    <script type="text/javascript"
+    src="{{ bower_component('jQuery/dist/jquery.js') }}"></script>
+    <script type="text/javascript"
+    src="{{ bower_component('d3/d3.js') }}"></script>
+    </head>
+    <body>
+        <div>
+
+
+            <object id="svg" data="{{ url_for('static', filename='media/svg/demo.svg') }}" type="image/svg+xml">
+            </object>
+
+
+        </div>
+    </body>
+    <script>
+        /**
+        D3 SVG
+        */
+        function init(svg) {
+            svg.selectAll("rect").attr('fill', 'red');
+            console.log(svg.selectAll("rect").select('rect'));
+        }
+
+        function watiForSvgLoad(init_function) {
+            let pollingFunc = () => {
+                var svg = d3.select(document.getElementById("svg").contentDocument);
+                var groups = svg.selectAll('g');
+                if (groups.empty()) {
+                    setTimeout(pollingFunc, 100);
+                } else {
+                    init_function.call(this, svg);
+                }
+            }
+            return pollingFunc;
+        }
+
+        $(watiForSvgLoad(init));
+    </script>
+</html>
