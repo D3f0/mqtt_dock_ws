@@ -31,7 +31,7 @@
 
     <script type="text/javascript">
     $(function () {
-
+        var retry = null;
         var $logger = $('#log');
         $logger.val(''); // Remove \n
         // $.get('/static/media/svg/demo.svg', function (svg) {
@@ -72,6 +72,9 @@
         client.on('disconnect', function() {
             $mqtt_status.text("Disconected");
             console.log('oh noes!');
+            
+            clearTimeout(retry);
+            setInterval(client.connect, 1000);
         });
         client.on('offline', function() {
             $mqtt_status.text("Offline");

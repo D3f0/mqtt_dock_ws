@@ -1,47 +1,112 @@
+
+
 <html>
-    <head>
-        <title></title>
-           <script type="text/javascript"
-    src="{{ bower_component('paho.mqtt.js/src/mqttws31.js') }}"></script>
-    <script type="text/javascript"
-    src="{{ bower_component('web-mqtt-client/mqtt-client.js') }}"></script>
-    <script type="text/javascript"
-    src="{{ bower_component('jQuery/dist/jquery.js') }}"></script>
-    <script type="text/javascript"
-    src="{{ bower_component('d3/d3.js') }}"></script>
-    </head>
-    <body>
-        <div>
 
+<head>
+    <title>SVG D3</title>
+    <script type="text/javascript" src="{{ bower_component('paho.mqtt.js/src/mqttws31.js') }}"></script>
+    <script type="text/javascript" src="{{ bower_component('web-mqtt-client/mqtt-client.js') }}"></script>
+    <script type="text/javascript" src="{{ bower_component('jQuery/dist/jquery.js') }}"></script>
+    <script type="text/javascript" src="{{ bower_component('d3/d3.js') }}"></script>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/svg.css') }}">
 
-            <object id="svg" data="{{ url_for('static', filename='media/svg/demo.svg') }}" type="image/svg+xml">
-            </object>
-
-
-        </div>
-    </body>
-    <script>
-        /**
-        D3 SVG
-        */
-        function init(svg) {
-            svg.selectAll("rect").attr('fill', 'red');
-            console.log(svg.selectAll("rect").select('rect'));
+    <style>
+        #container {
+            width: 100%;
+            height: 100%;
+            border: 1px solid #aaa;
         }
 
-        function watiForSvgLoad(init_function) {
-            let pollingFunc = () => {
-                var svg = d3.select(document.getElementById("svg").contentDocument);
-                var groups = svg.selectAll('g');
-                if (groups.empty()) {
-                    setTimeout(pollingFunc, 100);
-                } else {
-                    init_function.call(this, svg);
-                }
+        .shadow {
+            -webkit-filter: drop-shadow( 3px 3px 2px rgba(0, 0, 0, .7));
+            filter: drop-shadow( 3px 3px 2px rgba(0, 0, 0, .7));
+        }
+
+        #layer1 rect {
+            -webkit-animation: desaparecer 2s infinite alternate;
+            animation: desaparecer 2s infinite alternate;
+            -moz-transform: scale(1, 1);
+            -webkit-transform: scale(1, 1);
+        }
+
+        @keygrames desaparecer {
+            from {
+                margin-left: 100%;
+                width: 300%
             }
-            return pollingFunc;
+            to {
+                margin-left: 0%;
+                width: 100%;
+            }
         }
+    </style>
+</head>
 
-        $(watiForSvgLoad(init));
-    </script>
+<body>
+    <div>
+        <h1>Ejemplo que Combina D3 para manipular SVG y MQTT sobre WS</h1>
+        <div id="container"></div>
+
+    </div>
+</body>
+<script>
+    function init() {
+        /* Eventos diferidos */
+        var defer_mqtt = $.Deferred(),
+            defer_svg = $.Deferred();
+
+        var client = new MqttClient({
+            host: window.location.hostname,
+            port: window.location.port,
+            will: {
+                topic: 'websocket-down',
+                payload: '{}',
+            }
+        });
+
+        client.on('connect', function() {
+            //console.log("CONNECT");
+            defer_mqtt.resolve(client);
+        });
+
+        client.connect();
+
+        d3.xml("{{ url_for('static', filename='media/svg/demo.svg') }}", function(xml) {
+            var importedNode = document.importNode(xml.documentElement, true);
+            d3.select("#container").node().appendChild(importedNode);
+            defer_svg.resolve(d3.select());
+        });
+
+
+        $.when(defer_mqtt, defer_svg).then(function(mqtt_ws, svg) {
+
+            let TOPIC = 'svg';
+
+            mqtt_ws.subscribe(TOPIC);
+
+            mqtt_ws.on('message', function(topic, payload, rawPayload) {
+                if (topic == TOPIC) {
+                    let data = JSON.parse(payload);
+                    $.each(data, function(selector, changes) {
+                        let el = d3.select(selector);
+                        let empty = el.empty();
+                        if (empty) {
+                            console.error("No element by", selector);
+                            return;
+                        }
+                        let styles = changes.style || {};
+                        $.each(styles, (attribute, value) => {
+                            console.log(el, 'settings', attribute, 'to', value);
+                            el.style(attribute, value);
+                        });
+                    })
+                } else {
+                    console.error("El tópico es ", topic, payload);
+                }
+            })
+        });
+    }
+    $(init);
+</script>
+
 </html>
